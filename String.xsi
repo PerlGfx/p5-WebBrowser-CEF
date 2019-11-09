@@ -1,0 +1,15 @@
+// #include "include/internal/cef_string.h"
+
+namespace xs {
+	template <>
+		struct Typemap<CefString> : TypemapBase<CefString> {
+			static inline CefString in (SV* arg) {
+				CefString cef_str(xs::in<std::string>(arg));
+				return cef_str;
+			}
+
+			static inline Sv out (const CefString var, const Sv& proto = {}) {
+				return xs::out<std::string>(var, proto);
+			}
+	};
+}

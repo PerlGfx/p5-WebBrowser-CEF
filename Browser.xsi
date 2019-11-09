@@ -1,0 +1,16 @@
+MODE: INLINE
+
+#include "include/cef_browser.h"
+
+CEF_XS_TYPEMAP(CefBrowser, "Renard::API::CEF::Browser")
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Browser
+PROTOTYPES: DISABLE
+
+unsigned int CefBrowser::GetWindowHandle() {
+	RETVAL = THIS->GetHost()->GetWindowHandle();
+}
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}

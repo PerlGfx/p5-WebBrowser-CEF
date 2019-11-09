@@ -1,0 +1,20 @@
+cef_app_t* O_OBJECT
+cef_settings_t* O_OBJECT
+cef_window_info_t* O_OBJECT
+cef_browser_settings_t* O_OBJECT
+cef_client_t* O_OBJECT
+
+cef_string_t* T_CEF_STRING_PTR
+
+INPUT
+T_CEF_STRING_PTR
+	Newx($var, 1, cef_string_t);
+	STRLEN ${arg}_len;
+	char* ${arg}_str = SvPVutf8( $arg, ${arg}_len );
+	cef_string_from_utf8(${arg}_str, ${arg}_len, $var);
+
+OUTPUT
+T_CEF_STRING_PTR
+	cef_string_utf8_t ${arg}_output = {};
+	cef_string_to_utf8(${var}->str, ${var}->length, & ${arg}_output );
+	$arg = newSVpvn_utf8( ${arg}_output.str, ${arg}_output.length, 1);

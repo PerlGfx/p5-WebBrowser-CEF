@@ -1,0 +1,12 @@
+MODE: INLINE
+
+CEF_XS_STRUCT_TYPEMAP(CefRect, "Renard::API::CEF::Rect")
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Rect
+PROTOTYPES: DISABLE
+
+CefRect* CefRect::new( int x, int y, int width, int height );
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}

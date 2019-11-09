@@ -1,0 +1,27 @@
+MODE: INLINE
+
+#include "include/cef_app.h"
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::_Global
+PROTOTYPES: DISABLE
+
+int CefExecuteProcess(CefMainArgs& args, CefRefPtr<CefApp> application, void* windows_sandbox_info = nullptr);
+
+bool CefInitialize(CefMainArgs& args, CefSettings& settings, CefRefPtr<CefApp> application, void* windows_sandbox_info = nullptr);
+
+void CefShutdown();
+
+void CefDoMessageLoopWork();
+
+void CefRunMessageLoop();
+
+void CefQuitMessageLoop();
+
+void CefSetOSModalLoop(bool osModalLoop);
+
+void CefEnableHighDPISupport();
+
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}

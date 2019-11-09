@@ -1,0 +1,34 @@
+MODE: INLINE
+
+CEF_XS_STRUCT_TYPEMAP(CefMainArgs, "Renard::API::CEF::MainArgs")
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::MainArgs
+PROTOTYPES: DISABLE
+
+# // CefMainArgs::new(int argc_arg, char** argv_arg)
+
+CefMainArgs* CefMainArgs::new(SV* args_ref = nullptr) {
+	cef_main_args_t main_args;
+
+	AV* args = (AV*) SvRV( args_ref );
+	if( args_ref ) {
+		main_args.argc = av_len( args ) + 1;
+		main_args.argv = (char**)malloc( main_args.argc * sizeof(char *) );
+	} else {
+		main_args.argc = 0;
+		main_args.argv = NULL;
+	}
+
+        if( main_args.argc > 0 ) {
+                for( int arg_idx = 0; arg_idx < main_args.argc; arg_idx++ ) {
+                        SV* arg_sv = *( av_fetch( args, arg_idx, 0 ) );
+                        main_args.argv[arg_idx] = (char *)SvPV_nolen(arg_sv );
+                }
+        }
+	RETVAL = new CefMainArgs(main_args);
+	free(main_args.argv);
+}
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}
