@@ -1,24 +1,5 @@
 MODE: INLINE
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <gperl.h>
-#include <gtk/gtk.h>
-
-#if defined(GDK_WINDOWING_X11) && !defined(_WIN32)
-#define CEF_X11_VISUAL
-#endif
-
-#ifdef CEF_X11_VISUAL
-#include <X11/Xlib.h>
-#include <gdk/gdkx.h>
-#endif /* CEF_X11_VISUAL */
-
-#ifdef __cplusplus
-}
-#endif
-
 #include "cefperl_app.h"
 
 /* Everywhere CefApp is used, use CefPerlApp instead. */
@@ -31,41 +12,10 @@ private:
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };
 
-static void _fix_default_x11_visual(GtkWidget* widget) {
-#ifdef CEF_X11_VISUAL
-#if GTK_CHECK_VERSION(3,15,1)
-	// GTK+ > 3.15.1 uses an X11 visual optimized for GTK+'s OpenGL stuff
-	// since revid dae447728d: https://github.com/GNOME/gtk/commit/dae447728d
-	// However, it breaks CEF: https://github.com/cztomczak/cefcapi/issues/9
-	// Let's use the default X11 visual instead of the GTK's blessed one.
-	GdkScreen* screen = gdk_screen_get_default();
-	GList* visuals = gdk_screen_list_visuals(screen);
-	GdkX11Screen* x11_screen = GDK_X11_SCREEN(screen);
-	g_return_if_fail(x11_screen != NULL);
-	Visual* default_xvisual = DefaultVisual(GDK_SCREEN_XDISPLAY(x11_screen), GDK_SCREEN_XNUMBER(x11_screen));
-	GList* cursor = visuals;
-	while (cursor != NULL) {
-		GdkVisual* visual = GDK_X11_VISUAL(cursor->data);
-		if (default_xvisual->visualid == gdk_x11_visual_get_xvisual(visual)->visualid) {
-			gtk_widget_set_visual(widget, visual);
-			break;
-		}
-		cursor = cursor->next;
-	}
-	g_list_free(visuals);
-#endif /* GTK_CHECK_VERSION */
-#endif /* CEF_X11_VISUAL */
-}
-
 MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::App
 PROTOTYPES: DISABLE
 
 CefPerlApp* CefPerlApp::new();
-
-void fix_default_x11_visual(SV* sv_widget) {
-	GtkWidget* widget = (GtkWidget*)gperl_get_object(sv_widget);
-	_fix_default_x11_visual(widget);
-}
 
 CefRefPtr<CefBrowser> create_client(window_id_t xid = 0) {
 	CefWindowInfo window_info;

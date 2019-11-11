@@ -45,9 +45,6 @@ $WriteMakefileArgs{CONFIGURE} = sub {
 	require File::Spec;
 	require File::Glob;
 
-	use Renard::API::Glib;
-	use Renard::API::Gtk3;
-
 	my $c = Alien::CEF->new;
 
 	my $wrapper = File::Glob::bsd_glob(
@@ -65,13 +62,10 @@ $WriteMakefileArgs{CONFIGURE} = sub {
 		CCFLAGS => join(" ",
 			$Config::Config{ccflags},
 			qw(-I src),
-			Renard::API::Gtk3->Inline('C')->{CCFLAGSEX},
 			$c->cflags, '-std=c++14',
 		),
 		LIBS => join(" ",
 			$cef_libs,
-			Renard::API::Gtk3->Inline('C')->{LIBS},
-			":nosearch @{[ Renard::API::Gtk3->Inline('C')->{MYEXTLIB} ]} :search",
 		),
 		MYEXTLIB => $wrapper,
 	};

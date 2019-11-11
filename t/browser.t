@@ -14,6 +14,24 @@ use Renard::API::CEF;
 
 use lib 't/lib';
 
+fun fix_default_x11_visual($widget) {
+	return unless exists $ENV{DISPLAY};
+	return if Gtk3::check_version(3,15,1);
+	# GTK+ > 3.15.1 uses an X11 visual optimized for GTK+'s OpenGL stuff
+	# since revid dae447728d: https://github.com/GNOME/gtk/commit/dae447728d
+	# However, it breaks CEF: https://github.com/cztomczak/cefcapi/issues/9
+	# Let's use the default X11 visual instead of the GTK's blessed one.
+	#$widget->get_window =~ /X11Window/;
+	require Renard::API::Gtk3::GdkX11;
+	Renard::API::Gtk3::GdkX11->import;
+
+	my $gdk_screen = $widget->get_screen;
+	my $gdk_visuals = $gdk_screen->list_visuals;
+	my $default_xvisual = $gdk_screen->get_xscreen->DefaultVisual;
+	my ($default_gdkvisual) = grep { $_->get_xvisual->xvisualid == $default_xvisual->xvisualid } @$gdk_visuals;
+	$widget->set_visual($default_gdkvisual);
+}
+
 subtest "Create browser" => fun() {
 	## Provide CEF with command-line arguments.
 	#my $main_args = Renard::API::CEF::MainArgs->new(\@ARGV);
@@ -64,7 +82,7 @@ subtest "Create browser" => fun() {
 
 	my $w = Gtk3::Window->new;
 	$w->set_default_size(600,800);
-	Renard::API::CEF::App::fix_default_x11_visual($w);
+	fix_default_x11_visual($w);
 	$w->show_all;
 	$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($w));
 	eval {
