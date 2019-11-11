@@ -4,13 +4,13 @@ use Test::Most tests => 1;
 
 use Renard::Incunabula::Common::Setup;
 
-use Renard::API::CEF;
-
+use Glib 'TRUE', 'FALSE';
 use Renard::API::Glib;
 use Renard::API::Gtk3;
 use Renard::API::Gtk3::WindowID;
-use Glib 'TRUE', 'FALSE';
 use Gtk3 -init;
+
+use Renard::API::CEF;
 
 use lib 't/lib';
 
@@ -67,14 +67,16 @@ subtest "Create browser" => fun() {
 	Renard::API::CEF::App::fix_default_x11_visual($w);
 	$w->show_all;
 	$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($w));
-	use Renard::API::Gtk3::GdkX11;
-	$w->signal_connect( 'size-allocate' => sub {
-		my ($widget, $allocation) = @_;
-		my $display = Gtk3::Gdk::Display::get_default();
-		my $xid = $browser->GetWindowHandle;
-		my $window = Renard::API::Gtk3::GdkX11::X11Window->foreign_new_for_display( $display, $xid );
-		$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
-	});
+	eval {
+		require Renard::API::Gtk3::GdkX11;
+		$w->signal_connect( 'size-allocate' => sub {
+			my ($widget, $allocation) = @_;
+			my $display = Gtk3::Gdk::Display::get_default();
+			my $xid = $browser->GetWindowHandle;
+			my $window = Renard::API::Gtk3::GdkX11::X11Window->foreign_new_for_display( $display, $xid );
+			$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
+		});
+	} if $w->get_window =~ /X11Window/;
 
 	$w->queue_resize;
 

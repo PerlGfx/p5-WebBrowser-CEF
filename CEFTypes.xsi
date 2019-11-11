@@ -47,3 +47,12 @@ std::uint32_t refcnt_get(CefBaseRefCounted* param) {
 			static std::string package () { return _PACKAGE; } \
 		}; \
 	}
+
+
+#ifdef _WIN32 /* Microsoft Windows */
+typedef long long int window_id_t;
+typedef HWND window_id_internal_t;
+#else
+typedef long unsigned int window_id_t;
+typedef long unsigned int window_id_internal_t;
+#endif

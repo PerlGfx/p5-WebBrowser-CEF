@@ -2,14 +2,8 @@ MODE: INLINE
 
 CEF_XS_STRUCT_TYPEMAP(CefMainArgs, "Renard::API::CEF::MainArgs")
 
-MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::MainArgs
-PROTOTYPES: DISABLE
-
-# // CefMainArgs::new(int argc_arg, char** argv_arg)
-
-CefMainArgs* CefMainArgs::new(SV* args_ref = nullptr) {
-	cef_main_args_t main_args;
-
+void _set_cef_main_arg_t( SV* args_ref, cef_main_args_t& main_args ) {
+#ifndef _WIN32 /* Microsoft Windows */
 	AV* args = (AV*) SvRV( args_ref );
 	if( args_ref ) {
 		main_args.argc = av_len( args ) + 1;
@@ -25,8 +19,28 @@ CefMainArgs* CefMainArgs::new(SV* args_ref = nullptr) {
                         main_args.argv[arg_idx] = (char *)SvPV_nolen(arg_sv );
                 }
         }
-	RETVAL = new CefMainArgs(main_args);
+#endif
+}
+
+void _clear_cef_main_arg_t( cef_main_args_t& main_args ) {
+#ifndef _WIN32 /* Microsoft Windows */
 	free(main_args.argv);
+#endif
+}
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::MainArgs
+PROTOTYPES: DISABLE
+
+# // CefMainArgs::new(int argc_arg, char** argv_arg)
+
+CefMainArgs* CefMainArgs::new(SV* args_ref = nullptr) {
+	cef_main_args_t main_args;
+
+	_set_cef_main_arg_t(args_ref, main_args);
+
+	RETVAL = new CefMainArgs(main_args);
+
+	_clear_cef_main_arg_t(main_args);
 }
 
 BOOT {

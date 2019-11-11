@@ -1,6 +1,7 @@
 package inc::CEFMaker;
 use Moose;
 
+use Config;
 extends 'Dist::Zilla::Plugin::MakeMaker::Awesome';
 
 override _build_MakeFile_PL_template => sub {
@@ -21,15 +22,17 @@ override _build_WriteMakefile_args => sub { +{
 		PARSE_XS  => 'XS::Framework::ParseXS',
 		CPLUS   => 14,
 		PAYLOAD => {
-			'src/main$(EXT_EXT)' => '/main$(EXE_EXT)',
+			map { my $r = $_; $r =~ s,/,\\,g if $^O eq 'MSWin32'; $r }
+				( "src/main@{[ $Config{exe_ext} ]}" => "/main@{[ $Config{exe_ext} ]}" ),
 		},
 		postamble => [
 			'export LDLOADLIBS LDLIBS MYEXTLIB CCFLAGS EXE_EXT',
-			'src/main$(EXT_EXT) :: src/main.cpp ; cd src && $(MAKE) all',
+			(map { my $r = $_; $r =~ s,/,\\,g if $^O eq 'MSWin32'; $r }
+			'src/main$(EXE_EXT) :: src/main.cpp ; cd src && $(MAKE) all'),
 			'clean:: ; cd src && $(MAKE) clean',
 
 			'Settings.xsi :: Settings.struct',
-			'Settings.struct :: Settings.struct.in Settings.struct.elem ; cpp -o $@ $<; ' . $^X . ' -pi -e \'s/\\\\n/\n/g\' $@'
+			'Settings.struct :: Settings.struct.in Settings.struct.elem ; $(PERL) inc/process-cpp.pl $< $@',
 		],
 } };
 
@@ -39,12 +42,25 @@ override _build_WriteMakefile_dump => sub {
 $WriteMakefileArgs{CONFIGURE} = sub {
 	require Alien::CEF;
 	require Config;
-	use File::Spec;
-	use File::Glob;
+	require File::Spec;
+	require File::Glob;
 
-	require Renard::API::Gtk3;
+	use Renard::API::Glib;
+	use Renard::API::Gtk3;
 
 	my $c = Alien::CEF->new;
+
+	my $wrapper = File::Glob::bsd_glob(
+			File::Spec->catfile( $c->dist_dir , 'Release', 'libcef_dll_wrapper.*' ) );
+	my $cef_libs;
+	if( $^O eq 'MSWin32' ) {
+		$wrapper =~ s,\\,/,g;
+		$cef_libs = join " ", ":nosearch", $c->libs, ":search";
+		$cef_libs =~ s/-lcef/$wrapper $&/g;
+	} else {
+		$cef_libs = $c->libs;
+	}
+
 	+{
 		CCFLAGS => join(" ",
 			$Config::Config{ccflags},
@@ -53,11 +69,11 @@ $WriteMakefileArgs{CONFIGURE} = sub {
 			$c->cflags, '-std=c++14',
 		),
 		LIBS => join(" ",
-			$c->libs,
+			$cef_libs,
 			Renard::API::Gtk3->Inline('C')->{LIBS},
+			":nosearch @{[ Renard::API::Gtk3->Inline('C')->{MYEXTLIB} ]} :search",
 		),
-		MYEXTLIB => File::Glob::bsd_glob(
-			File::Spec->catfile( $c->dist_dir , 'Release', 'libcef_dll_wrapper.*' ) )
+		MYEXTLIB => $wrapper,
 	};
 };
 END

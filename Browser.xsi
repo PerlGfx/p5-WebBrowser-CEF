@@ -7,8 +7,8 @@ CEF_XS_TYPEMAP(CefBrowser, "Renard::API::CEF::Browser")
 MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Browser
 PROTOTYPES: DISABLE
 
-unsigned int CefBrowser::GetWindowHandle() {
-	RETVAL = THIS->GetHost()->GetWindowHandle();
+window_id_t CefBrowser::GetWindowHandle() {
+	RETVAL = reinterpret_cast<window_id_t>(THIS->GetHost()->GetWindowHandle());
 }
 
 BOOT {

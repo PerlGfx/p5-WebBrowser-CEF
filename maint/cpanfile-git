@@ -4,3 +4,9 @@ requires 'Renard::Incunabula',
 requires 'Alien::CEF',
 	git => 'https://github.com/project-renard/p5-Alien-CEF.git',
 	branch => 'master';
+requires 'Renard::API::Glib',
+	git => 'https://github.com/project-renard/p5-Renard-API-Glib.git',
+	branch => 'master';
+requires 'Renard::API::Gtk3',
+	git => 'https://github.com/project-renard/p5-Renard-API-Gtk3.git',
+	branch => 'master';
