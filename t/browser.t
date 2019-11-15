@@ -32,7 +32,35 @@ fun fix_default_x11_visual($widget) {
 	$widget->set_visual($default_gdkvisual);
 }
 
+fun get_foreign_window_constructor() {
+	my $display = Gtk3::Gdk::Display::get_default();
+	my $display_type = ref $display;
+	my $constructor;
+	if($display_type =~ /\QX11Display\E$/) {
+		require Renard::API::Gtk3::GdkX11;
+		Renard::API::Gtk3::GdkX11->import;
+		$display = bless $display, 'Renard::API::Gtk3::GdkX11::X11Display';
+		$constructor = sub {
+			my ($id) = @_;
+			my $window = Renard::API::Gtk3::GdkX11::X11Window->foreign_new_for_display( $display, $id );
+		};
+	} elsif($display_type =~ /\QWin32Display\E$/) {
+		require Renard::API::Gtk3::GdkWin32;
+		Renard::API::Gtk3::GdkWin32->import;
+		$display = bless $display, 'Renard::API::Gtk3::GdkWin32::Win32Display';
+		$constructor = sub {
+			my ($id) = @_;
+			my $window = Renard::API::Gtk3::GdkWin32::Win32Window->foreign_new_for_display( $display, $id );
+		};
+	} else {
+		die "unimplemented foreign window constructor";
+	}
+	return $constructor;
+}
+
 subtest "Create browser" => fun() {
+	plan skip_all => "No monitor for display" unless Gtk3::Gdk::Display::get_default()->get_primary_monitor;
+
 	## Provide CEF with command-line arguments.
 	#my $main_args = Renard::API::CEF::MainArgs->new(\@ARGV);
 	#my $main_args = Renard::API::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
@@ -77,26 +105,28 @@ subtest "Create browser" => fun() {
 	#CefInitialize(main_args, settings, app.get(), NULL);
 	Renard::API::CEF::_Global::CefInitialize($main_args, $settings, $app);
 
-
 	my $browser;
 
 	my $w = Gtk3::Window->new;
 	$w->set_default_size(600,800);
 	fix_default_x11_visual($w);
-	$w->show_all;
-	$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($w));
-	eval {
-		require Renard::API::Gtk3::GdkX11;
-		$w->signal_connect( 'size-allocate' => sub {
-			my ($widget, $allocation) = @_;
-			my $display = Gtk3::Gdk::Display::get_default();
-			my $xid = $browser->GetWindowHandle;
-			my $window = Renard::API::Gtk3::GdkX11::X11Window->foreign_new_for_display( $display, $xid );
-			$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
-		});
-	} if $w->get_window =~ /X11Window/;
+	my $widget = Gtk3::DrawingArea->new;
+	$widget->set_double_buffered(FALSE);
+	$w->add($widget);
 
-	$w->queue_resize;
+	$widget->signal_connect( realize => sub {
+		$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($widget));
+		$widget->queue_resize;
+	});
+
+	my $new_foreign_window = get_foreign_window_constructor();
+	$widget->signal_connect( 'size-allocate' => sub {
+		my ($widget, $allocation) = @_;
+		return unless $browser;
+		my $xid = $browser->GetWindowHandle;
+		my $window = $new_foreign_window->($xid);
+		$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
+	});
 
 	#// Run the CEF message loop. This will block until CefQuitMessageLoop() is
 	#// called.
@@ -112,6 +142,7 @@ subtest "Create browser" => fun() {
 		Renard::API::CEF::_Global::CefShutdown();
 	});
 
+	$w->show_all;
 	Gtk3::main;
 
 	pass;
