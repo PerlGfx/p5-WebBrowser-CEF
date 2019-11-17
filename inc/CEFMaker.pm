@@ -59,6 +59,9 @@ $WriteMakefileArgs{CONFIGURE} = sub {
 	}
 
 	+{
+		PREREQ_PM => {
+			( 'Win32::API' => 0 ) x !!($^O eq 'MSWin32'),
+		},
 		CCFLAGS => join(" ",
 			$Config::Config{ccflags},
 			qw(-I src),

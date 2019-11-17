@@ -14,6 +14,24 @@ use Renard::API::CEF;
 
 use lib 't/lib';
 
+BEGIN {
+	if( $^O eq 'MSWin32' ) {
+		# disable layered windows
+		$ENV{GDK_WIN32_LAYERED} = 0;
+
+		require Win32::API;
+		Win32::API->Import("user32", "HWND SetParent( HWND hWndChild, HWND hWndNewParent )");
+		Win32::API::Struct->typedef(qw(
+			RECT
+			LONG left;
+			LONG top;
+			LONG right;
+			LONG bottom;
+		));
+		Win32::API->Import("user32", "BOOL GetClientRect( HWND   hWnd, LPRECT lpRect )");
+	}
+}
+
 fun fix_default_x11_visual($widget) {
 	return unless exists $ENV{DISPLAY};
 	return if Gtk3::check_version(3,15,1);
@@ -47,7 +65,7 @@ fun get_foreign_window_constructor() {
 	} elsif($display_type =~ /\QWin32Display\E$/) {
 		require Renard::API::Gtk3::GdkWin32;
 		Renard::API::Gtk3::GdkWin32->import;
-		$display = bless $display, 'Renard::API::Gtk3::GdkWin32::Win32Display';
+		#$display = bless $display, 'Renard::API::Gtk3::GdkWin32::Win32Display';
 		$constructor = sub {
 			my ($id) = @_;
 			my $window = Renard::API::Gtk3::GdkWin32::Win32Window->foreign_new_for_display( $display, $id );
@@ -56,6 +74,21 @@ fun get_foreign_window_constructor() {
 		die "unimplemented foreign window constructor";
 	}
 	return $constructor;
+}
+
+fun get_allocation( $widget, $allocation ) {
+	if( $^O eq 'MSWin32' ) {
+		my $parent_hwnd = Renard::API::Gtk3::WindowID->get_widget_id($widget);
+		my $lpRect = Win32::API::Struct->new('RECT');
+		GetClientRect($parent_hwnd, $lpRect);
+		return +{
+			x => $lpRect->{left},
+			y => $lpRect->{top},
+			width => $lpRect->{right} - $lpRect->{left},
+			height => $lpRect->{bottom} - $lpRect->{top},
+		};
+	}
+	return $allocation;
 }
 
 subtest "Create browser" => fun() {
@@ -125,6 +158,7 @@ subtest "Create browser" => fun() {
 		return unless $browser;
 		my $xid = $browser->GetWindowHandle;
 		my $window = $new_foreign_window->($xid);
+		$allocation = get_allocation( $widget, $allocation );
 		$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
 	});
 

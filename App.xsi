@@ -12,6 +12,15 @@ private:
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };
 
+void WindowSetParent( CefWindowInfo &window_info, window_id_t xid) {
+	window_info.parent_window = reinterpret_cast<window_id_internal_t>(xid);
+#ifdef _WIN32 /* Microsoft Windows */
+	RECT r;
+	GetClientRect(window_info.parent_window, &r);
+	window_info.SetAsChild( window_info.parent_window, r );
+#endif
+}
+
 MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::App
 PROTOTYPES: DISABLE
 
@@ -20,7 +29,7 @@ CefPerlApp* CefPerlApp::new();
 CefRefPtr<CefBrowser> create_client(window_id_t xid = 0) {
 	CefWindowInfo window_info;
 	if( xid ) {
-		window_info.parent_window = reinterpret_cast<window_id_internal_t>(xid);
+		WindowSetParent(window_info, xid);
 	}
 
 	CefString url("https://www.google.com/ncr");
