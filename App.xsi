@@ -26,13 +26,13 @@ PROTOTYPES: DISABLE
 
 CefPerlApp* CefPerlApp::new();
 
-CefRefPtr<CefBrowser> create_client(window_id_t xid = 0) {
+CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string ) {
 	CefWindowInfo window_info;
 	if( xid ) {
 		WindowSetParent(window_info, xid);
 	}
 
-	CefString url("https://www.google.com/ncr");
+	CefString url(url_string);
 
 	CefBrowserSettings browser_settings;
 

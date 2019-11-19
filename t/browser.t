@@ -149,7 +149,9 @@ subtest "Create browser" => fun() {
 	$w->add($widget);
 
 	$widget->signal_connect( realize => sub {
-		$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($widget));
+		#my $url = "https://www.google.com/ncr";
+		my $url = "https://upload.wikimedia.org/wikipedia/commons/f/ff/Solid_blue.svg";
+		$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($widget), $url);
 		$widget->queue_resize;
 	});
 
@@ -196,8 +198,8 @@ subtest "Create browser" => fun() {
 
 	my $colors = $img->getcolorusagehash;
 	#$img->write( file => 'window.png' );
-	my $blue_color = pack("CCC", 0x42, 0x85, 0xF4 );
-	ok exists $colors->{ $blue_color  } && $colors->{ $blue_color  } > 200, 'has the blue color we are looking for: #4285F4';
+	my $blue_color = pack("CCC", 0x00, 0x00, 0xFF );
+	ok exists $colors->{ $blue_color  } && $colors->{ $blue_color  } > 200, 'has the blue color we are looking for: #0000FF';
 };
 
 done_testing;
