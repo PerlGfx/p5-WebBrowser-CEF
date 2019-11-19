@@ -9,7 +9,7 @@ matrix:
       sudo: required
       services: docker
       env: OBERTH_COVERAGE=coveralls
-    - os: osx
+    #- os: osx # TODO re-enable macOS when implemented
 
 before_install:
   - eval "$(curl https://raw.githubusercontent.com/oberth-manoeuvre/oberth-prototype/master/script/ci/travis-oberth.sh)"
