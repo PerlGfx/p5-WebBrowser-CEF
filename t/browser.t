@@ -10,6 +10,7 @@ use Renard::API::Gtk3;
 use Renard::API::Gtk3::WindowID;
 use Gtk3 -init;
 
+use Imager::Screenshot;
 use Renard::API::CEF;
 
 use lib 't/lib';
@@ -176,10 +177,27 @@ subtest "Create browser" => fun() {
 		Renard::API::CEF::_Global::CefShutdown();
 	});
 
+	my $img;
+	Glib::Timeout->add(5*1000, sub {
+		my $handle = Renard::API::Gtk3::WindowID->get_widget_id($widget);
+		if( Imager::Screenshot->have_win32 ) {
+			$img = Imager::Screenshot::screenshot( hwnd => $handle );
+		} elsif( Imager::Screenshot->have_x11 ) {
+			$img = Imager::Screenshot::screenshot( id => $handle );
+		} elsif( Imager::Screenshot->have_darwin ) {
+			...
+		}
+		Gtk3::main_quit;
+		return FALSE;
+	});
+
 	$w->show_all;
 	Gtk3::main;
 
-	pass;
+	my $colors = $img->getcolorusagehash;
+	#$img->write( file => 'window.png' );
+	my $blue_color = pack("CCC", 0x42, 0x85, 0xF4 );
+	ok exists $colors->{ $blue_color  } && $colors->{ $blue_color  } > 200, 'has the blue color we are looking for: #4285F4';
 };
 
 done_testing;
