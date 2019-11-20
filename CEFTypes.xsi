@@ -1,0 +1,58 @@
+namespace xs {
+	// automatic default typemap for <CefRefPtr<TYPE>> if typemap for <TYPE> defined
+	template <class TYPEMAP, class TYPE> struct Typemap<CefRefPtr<TYPEMAP>, CefRefPtr<TYPE>> : Typemap<TYPE*> {
+		using Super = Typemap<TYPE*>;
+		static CefRefPtr<TYPE> in (SV* arg) { return CefRefPtr<TYPE>(xs::Typemap<TYPE*>::in(arg)); }
+		//static CefRefPtr<TYPE> in (SV* arg) { return CefRefPtr<TYPE>(Super::in(arg)); }
+
+		static Sv out (const CefRefPtr<TYPE>& var, const Sv& proto = {}) {
+			return Super::out(var.get(), proto);
+		}
+	};
+
+}
+
+namespace xs {
+	template <class D> struct CefTypemap : TypemapObject<D, D, ObjectTypeRefcntPtr, ObjectStorageMG, StaticCast> {
+	};
+
+	template <class D> struct CefStructTypemap : TypemapObject<D, D, ObjectTypePtr, ObjectStorageMG, StaticCast> {
+	};
+}
+
+void refcnt_inc(CefBaseRefCounted* param) { param->AddRef(); }
+void refcnt_dec(CefBaseRefCounted* param) { param->Release(); }
+std::uint32_t refcnt_get(CefBaseRefCounted* param) {
+	if( ! param->HasAtLeastOneRef() ) {
+		return 0;
+	}
+	return param->HasOneRef() ? 1 : 2;
+}
+
+		//struct Typemap< _TYPE *, _TYPE *> : CefTypemap< _TYPE *> { \
+		//struct Typemap< _TYPE *, _TYPE *> : TypemapObject<D, D, ObjectTypeRefcntPtr, ObjectStorageMG, StaticCast> { \
+
+#define CEF_XS_TYPEMAP(_TYPE, _PACKAGE) \
+	namespace xs { \
+		template <> \
+		struct Typemap< _TYPE *> : TypemapObject<_TYPE*, _TYPE*, ObjectTypeRefcntPtr, ObjectStorageMG, StaticCast> { \
+			static std::string package () { return _PACKAGE; } \
+		}; \
+	}
+
+#define CEF_XS_STRUCT_TYPEMAP(_TYPE, _PACKAGE) \
+	namespace xs { \
+		template <> \
+		struct Typemap< _TYPE *> : TypemapObject<_TYPE*, _TYPE*, ObjectTypePtr, ObjectStorageMG, StaticCast> { \
+			static std::string package () { return _PACKAGE; } \
+		}; \
+	}
+
+
+#ifdef _WIN32 /* Microsoft Windows */
+typedef long long int window_id_t;
+typedef HWND window_id_internal_t;
+#else
+typedef long unsigned int window_id_t;
+typedef long unsigned int window_id_internal_t;
+#endif

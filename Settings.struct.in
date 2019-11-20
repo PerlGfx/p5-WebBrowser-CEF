@@ -1,0 +1,25 @@
+#define STRUCT_ELEM_REF( TYPE, ELEMENT ) \
+TYPE CefSettings::ELEMENT( SV* value = nullptr ) { \n\
+	if( value ) { \n\
+		THIS->ELEMENT = xs<TYPE>::in(value); \n\
+	} \n\
+	RETVAL = xs<TYPE>::out(THIS->ELEMENT) ; \n\
+} \n
+
+#define STRUCT_ELEM_STR( TYPE, ELEMENT ) \
+TYPE CefSettings::ELEMENT( SV* value = nullptr ) { \n\
+	if( value ) { \n\
+		CefString(&THIS->ELEMENT) = xs::in<CefString>(value); \n\
+	} \n\
+	RETVAL = CefString(&THIS->ELEMENT); \n\
+} \n
+
+#define STRUCT_ELEM_INT( TYPE, ELEMENT ) \
+TYPE CefSettings::ELEMENT( SV* value = nullptr ) { \n\
+	if( value ) { \n\
+		THIS->ELEMENT = xs::in<int>(value); \n\
+	} \n\
+	RETVAL = THIS->ELEMENT ; \n\
+} \n
+
+#include "Settings.struct.elem"

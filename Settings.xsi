@@ -1,0 +1,17 @@
+MODE: INLINE
+
+// #include "include/internal/cef_types_wrappers.h"
+// #include "include/internal/cef_types.h" // cef_settings_t
+
+CEF_XS_STRUCT_TYPEMAP(CefSettings, "Renard::API::CEF::Settings")
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Settings
+PROTOTYPES: DISABLE
+
+CefSettings* CefSettings::new()
+
+INCLUDE: Settings.struct
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}

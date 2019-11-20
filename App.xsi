@@ -1,0 +1,50 @@
+MODE: INLINE
+
+#include "cefperl_app.h"
+
+/* Everywhere CefApp is used, use CefPerlApp instead. */
+#define CefApp CefPerlApp
+
+CEF_XS_TYPEMAP(CefPerlApp, "Renard::API::CEF::App")
+
+class SimpleHandler : public CefClient {
+private:
+  IMPLEMENT_REFCOUNTING(SimpleHandler);
+};
+
+void WindowSetParent( CefWindowInfo &window_info, window_id_t xid) {
+	window_info.parent_window = reinterpret_cast<window_id_internal_t>(xid);
+#ifdef _WIN32 /* Microsoft Windows */
+	RECT r;
+	GetClientRect(window_info.parent_window, &r);
+	window_info.SetAsChild( window_info.parent_window, r );
+#endif
+}
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::App
+PROTOTYPES: DISABLE
+
+CefPerlApp* CefPerlApp::new();
+
+CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string ) {
+	CefWindowInfo window_info;
+	if( xid ) {
+		WindowSetParent(window_info, xid);
+	}
+
+	CefString url(url_string);
+
+	CefBrowserSettings browser_settings;
+
+	// Client handler and its callbacks
+	CefRefPtr<CefClient> client(new SimpleHandler);
+
+	// Create browser asynchronously. There is also a
+	// synchronous version of this function available.
+	//CefBrowserHost::CreateBrowser(window_info, client, url, browser_settings, NULL, NULL);
+	RETVAL = CefBrowserHost::CreateBrowserSync(window_info, client, url, browser_settings, NULL, NULL);
+}
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}
