@@ -4,12 +4,32 @@ MODE: INLINE
 
 CEF_XS_TYPEMAP(CefBrowser, "Renard::API::CEF::Browser")
 
+CEF_XS_TYPEMAP(CefBrowserHost, "Renard::API::CEF::BrowserHost")
+
+CEF_XS_TYPEMAP(CefClient, "Renard::API::CEF::Client")
+
 MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Browser
 PROTOTYPES: DISABLE
 
 window_id_t CefBrowser::GetWindowHandle() {
 	RETVAL = reinterpret_cast<window_id_t>(THIS->GetHost()->GetWindowHandle());
 }
+
+CefRefPtr<CefBrowserHost> CefBrowser::GetHost();
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Client
+PROTOTYPES: DISABLE
+
+BOOT {
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);
+}
+
+MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::BrowserHost
+PROTOTYPES: DISABLE
 
 BOOT {
 	Stash(__PACKAGE__, GV_ADD).mark_as_loaded(__MODULE__);

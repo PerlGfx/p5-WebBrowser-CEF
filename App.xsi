@@ -43,6 +43,12 @@ CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string 
 	// synchronous version of this function available.
 	//CefBrowserHost::CreateBrowser(window_info, client, url, browser_settings, NULL, NULL);
 	RETVAL = CefBrowserHost::CreateBrowserSync(window_info, client, url, browser_settings, NULL, NULL);
+
+	/*CefPoint point;
+	CefRefPtr<CefClient> dt_client(new SimpleHandler);
+	CefBrowserSettings dt_browser_settings;
+	CefWindowInfo dt_window_info;
+	RETVAL->GetHost()->ShowDevTools( dt_window_info, dt_client, dt_browser_settings, point );*/
 }
 
 BOOT {
