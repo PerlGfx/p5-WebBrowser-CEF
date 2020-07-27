@@ -34,7 +34,13 @@ BEGIN {
 }
 
 fun fix_default_x11_visual($widget) {
+	# need to have X11
 	return unless exists $ENV{DISPLAY};
+
+	# $ENV{DISPLAY} might be set to XQuartz, but Gtk3 package for macOS
+	# does not have GdkX11
+	return if $^O eq 'darwin';
+
 	return if Gtk3::check_version(3,15,1);
 	# GTK+ > 3.15.1 uses an X11 visual optimized for GTK+'s OpenGL stuff
 	# since revid dae447728d: https://github.com/GNOME/gtk/commit/dae447728d
