@@ -157,7 +157,10 @@ subtest "Create browser" => fun() {
 	my $app = Renard::API::CEF::App->new;
 
 	my $exit_code = Renard::API::CEF::_Global::CefExecuteProcess($main_args, $app);
-	return $exit_code if $exit_code >= 0;
+	if( $exit_code >= 0 ) {
+		diag "Exiting CEF process with code: $exit_code";
+		return $exit_code;
+	}
 
 	#// Initialize CEF for the browser process.
 	#CefInitialize(main_args, settings, app.get(), NULL);
