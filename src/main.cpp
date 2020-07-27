@@ -1,7 +1,15 @@
 #include "cefperl_app.h"
 
 int main(int argc, char **argv) {
+#if 0 /* DEBUG: output arguments for subprocess */
+	for( int i = 0; i < argc; i++ ) {
+		fprintf(stderr, "argv[%i]: %s\n", i, argv[i] ); // DEBUG
+	}
+#endif
+
+
 	cef_main_args_t main_args;
+
 #ifndef _WIN32 /* Microsoft Windows */
 	main_args.argc = argc;
 	main_args.argv = argv;
