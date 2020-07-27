@@ -95,6 +95,13 @@ fun get_allocation( $widget, $allocation ) {
 subtest "Create browser" => fun() {
 	plan skip_all => "No monitor for display" unless Gtk3::Gdk::Display::get_default()->get_primary_monitor;
 
+	if( Alien::CEF->framework_path ) {
+		Renard::API::CEF::_Global::LoadLibrary(
+			path(Alien::CEF->framework_path)
+				->child('Chromium Embedded Framework')
+				->stringify
+		);
+	}
 	## Provide CEF with command-line arguments.
 	#my $main_args = Renard::API::CEF::MainArgs->new(\@ARGV);
 	#my $main_args = Renard::API::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
