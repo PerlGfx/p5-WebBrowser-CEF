@@ -71,8 +71,19 @@ fun get_foreign_window_constructor() {
 			my ($id) = @_;
 			my $window = Renard::API::Gtk3::GdkWin32::Win32Window->foreign_new_for_display( $display, $id );
 		};
+	} elsif($display_type =~ /\QQuartzDisplay\E$/) {
+		require Renard::API::Gtk3::GdkQuartz;
+		Renard::API::Gtk3::GdkQuartz->import;
+		$constructor = sub {
+			my ($id) = @_;
+			# Gtk3 on macOS does not support foreign windows. There
+			# does exist a patch for GtkNSView, but this is not
+			# going to be incorporated.
+			#my $window = Renard::API::Gtk3::GdkQuartz::QuartzWindow->foreign_new_for_display( $display, $id );
+			return undef;
+		};
 	} else {
-		die "unimplemented foreign window constructor";
+		die "unimplemented foreign window constructor for diplay type $display_type";
 	}
 	return $constructor;
 }
@@ -173,7 +184,10 @@ subtest "Create browser" => fun() {
 		my $xid = $browser->GetWindowHandle;
 		my $window = $new_foreign_window->($xid);
 		$allocation = get_allocation( $widget, $allocation );
-		$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
+		if( $window ) {
+			$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
+		}
+		$browser->NotifyMoveOrResizeStarted;
 	});
 
 	#// Run the CEF message loop. This will block until CefQuitMessageLoop() is

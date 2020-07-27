@@ -7,8 +7,14 @@ CEF_XS_TYPEMAP(CefBrowser, "Renard::API::CEF::Browser")
 MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Browser
 PROTOTYPES: DISABLE
 
+# /* TODO implement this in CefBrowserHost */
 window_id_t CefBrowser::GetWindowHandle() {
 	RETVAL = reinterpret_cast<window_id_t>(THIS->GetHost()->GetWindowHandle());
+}
+
+# /* TODO implement this in CefBrowserHost */
+void CefBrowser::NotifyMoveOrResizeStarted() {
+	THIS->GetHost()->NotifyMoveOrResizeStarted();
 }
 
 BOOT {
