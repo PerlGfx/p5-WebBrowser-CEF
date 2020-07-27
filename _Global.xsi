@@ -5,6 +5,12 @@ MODE: INLINE
 MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::_Global
 PROTOTYPES: DISABLE
 
+void LoadLibrary(char* path) {
+#if defined(OS_MACOSX)
+	cef_load_library(path);
+#endif
+}
+
 int CefExecuteProcess(CefMainArgs& args, CefRefPtr<CefApp> application, void* windows_sandbox_info = nullptr);
 
 bool CefInitialize(CefMainArgs& args, CefSettings& settings, CefRefPtr<CefApp> application, void* windows_sandbox_info = nullptr);

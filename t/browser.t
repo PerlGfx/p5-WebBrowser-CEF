@@ -34,7 +34,13 @@ BEGIN {
 }
 
 fun fix_default_x11_visual($widget) {
+	# need to have X11
 	return unless exists $ENV{DISPLAY};
+
+	# $ENV{DISPLAY} might be set to XQuartz, but Gtk3 package for macOS
+	# does not have GdkX11
+	return if $^O eq 'darwin';
+
 	return if Gtk3::check_version(3,15,1);
 	# GTK+ > 3.15.1 uses an X11 visual optimized for GTK+'s OpenGL stuff
 	# since revid dae447728d: https://github.com/GNOME/gtk/commit/dae447728d
@@ -71,8 +77,19 @@ fun get_foreign_window_constructor() {
 			my ($id) = @_;
 			my $window = Renard::API::Gtk3::GdkWin32::Win32Window->foreign_new_for_display( $display, $id );
 		};
+	} elsif($display_type =~ /\QQuartzDisplay\E$/) {
+		require Renard::API::Gtk3::GdkQuartz;
+		Renard::API::Gtk3::GdkQuartz->import;
+		$constructor = sub {
+			my ($id) = @_;
+			# Gtk3 on macOS does not support foreign windows. There
+			# does exist a patch for GtkNSView, but this is not
+			# going to be incorporated.
+			#my $window = Renard::API::Gtk3::GdkQuartz::QuartzWindow->foreign_new_for_display( $display, $id );
+			return undef;
+		};
 	} else {
-		die "unimplemented foreign window constructor";
+		die "unimplemented foreign window constructor for diplay type $display_type";
 	}
 	return $constructor;
 }
@@ -95,6 +112,13 @@ fun get_allocation( $widget, $allocation ) {
 subtest "Create browser" => fun() {
 	plan skip_all => "No monitor for display" unless Gtk3::Gdk::Display::get_default()->get_primary_monitor;
 
+	if( Alien::CEF->framework_path ) {
+		Renard::API::CEF::_Global::LoadLibrary(
+			path(Alien::CEF->framework_path)
+				->child('Chromium Embedded Framework')
+				->stringify
+		);
+	}
 	## Provide CEF with command-line arguments.
 	#my $main_args = Renard::API::CEF::MainArgs->new(\@ARGV);
 	#my $main_args = Renard::API::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
@@ -133,7 +157,10 @@ subtest "Create browser" => fun() {
 	my $app = Renard::API::CEF::App->new;
 
 	my $exit_code = Renard::API::CEF::_Global::CefExecuteProcess($main_args, $app);
-	return $exit_code if $exit_code >= 0;
+	if( $exit_code >= 0 ) {
+		diag "Exiting CEF process with code: $exit_code";
+		return $exit_code;
+	}
 
 	#// Initialize CEF for the browser process.
 	#CefInitialize(main_args, settings, app.get(), NULL);
@@ -151,7 +178,11 @@ subtest "Create browser" => fun() {
 	$widget->signal_connect( realize => sub {
 		#my $url = "https://www.google.com/ncr";
 		my $url = "https://upload.wikimedia.org/wikipedia/commons/f/ff/Solid_blue.svg";
-		$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($widget), $url);
+		$browser = Renard::API::CEF::App::create_client(
+			Renard::API::Gtk3::WindowID->get_widget_id($widget),
+			$url,
+			0, 0,
+			$widget->get_allocated_width, $widget->get_allocated_height );
 		$widget->queue_resize;
 	});
 
@@ -162,7 +193,10 @@ subtest "Create browser" => fun() {
 		my $xid = $browser->GetWindowHandle;
 		my $window = $new_foreign_window->($xid);
 		$allocation = get_allocation( $widget, $allocation );
-		$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
+		if( $window ) {
+			$window->move_resize( $allocation->{x}, $allocation->{y}, $allocation->{width}, $allocation->{height} );
+		}
+		$browser->NotifyMoveOrResizeStarted;
 	});
 
 	#// Run the CEF message loop. This will block until CefQuitMessageLoop() is
@@ -184,10 +218,22 @@ subtest "Create browser" => fun() {
 		my $handle = Renard::API::Gtk3::WindowID->get_widget_id($widget);
 		if( Imager::Screenshot->have_win32 ) {
 			$img = Imager::Screenshot::screenshot( hwnd => $handle );
-		} elsif( Imager::Screenshot->have_x11 ) {
-			$img = Imager::Screenshot::screenshot( id => $handle );
 		} elsif( Imager::Screenshot->have_darwin ) {
-			...
+			# Not using Imager::Screenshot on macOS because it
+			# appears to have calibrated colours which seems to
+			# require not using solid blue as on other platforms
+			# and instead using #0533FF :
+			#     $blue_color = pack("CCC", 0x05, 0x33, 0xFF) if $^O eq 'darwin';
+			#note "screenshots the whole screen since NSView is not implemented";
+			#$img = Imager::Screenshot::screenshot( darwin => 0 );
+
+			my $tempfile = Path::Tiny->tempfile( SUFFIX => '.png' );
+			system(qw(screencapture -t png), $tempfile);
+			$img = Imager->new( file => $tempfile );
+		} elsif( Imager::Screenshot->have_x11 ) {
+			# Check this after `have_darwin` because macOS might
+			# have X11 (XQuartz).
+			$img = Imager::Screenshot::screenshot( id => $handle );
 		}
 		Gtk3::main_quit;
 		return FALSE;

@@ -12,12 +12,16 @@ private:
   IMPLEMENT_REFCOUNTING(SimpleHandler);
 };
 
-void WindowSetParent( CefWindowInfo &window_info, window_id_t xid) {
-	window_info.parent_window = reinterpret_cast<window_id_internal_t>(xid);
-#ifdef _WIN32 /* Microsoft Windows */
+void WindowSetParent( CefWindowInfo &window_info, window_id_t xid, int x, int y, int width, int height) {
+#if defined(OS_WIN)
 	RECT r;
 	GetClientRect(window_info.parent_window, &r);
 	window_info.SetAsChild( window_info.parent_window, r );
+#elif defined(OS_MACOSX)
+	window_info.parent_view = reinterpret_cast<window_id_internal_t>(xid);
+	window_info.SetAsChild( window_info.parent_view, x, y, width, height );
+#elif defined(OS_LINUX)
+	window_info.parent_window = reinterpret_cast<window_id_internal_t>(xid);
 #endif
 }
 
@@ -26,10 +30,10 @@ PROTOTYPES: DISABLE
 
 CefPerlApp* CefPerlApp::new();
 
-CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string ) {
+CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string, int x, int y, int width, int height ) {
 	CefWindowInfo window_info;
 	if( xid ) {
-		WindowSetParent(window_info, xid);
+		WindowSetParent(window_info, xid, x, y, width, height);
 	}
 
 	CefString url(url_string);
