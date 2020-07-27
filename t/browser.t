@@ -218,10 +218,22 @@ subtest "Create browser" => fun() {
 		my $handle = Renard::API::Gtk3::WindowID->get_widget_id($widget);
 		if( Imager::Screenshot->have_win32 ) {
 			$img = Imager::Screenshot::screenshot( hwnd => $handle );
-		} elsif( Imager::Screenshot->have_x11 ) {
-			$img = Imager::Screenshot::screenshot( id => $handle );
 		} elsif( Imager::Screenshot->have_darwin ) {
-			...
+			# Not using Imager::Screenshot on macOS because it
+			# appears to have calibrated colours which seems to
+			# require not using solid blue as on other platforms
+			# and instead using #0533FF :
+			#     $blue_color = pack("CCC", 0x05, 0x33, 0xFF) if $^O eq 'darwin';
+			#note "screenshots the whole screen since NSView is not implemented";
+			#$img = Imager::Screenshot::screenshot( darwin => 0 );
+
+			my $tempfile = Path::Tiny->tempfile( SUFFIX => '.png' );
+			system(qw(screencapture -t png), $tempfile);
+			$img = Imager->new( file => $tempfile );
+		} elsif( Imager::Screenshot->have_x11 ) {
+			# Check this after `have_darwin` because macOS might
+			# have X11 (XQuartz).
+			$img = Imager::Screenshot::screenshot( id => $handle );
 		}
 		Gtk3::main_quit;
 		return FALSE;
