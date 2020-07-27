@@ -151,7 +151,11 @@ subtest "Create browser" => fun() {
 	$widget->signal_connect( realize => sub {
 		#my $url = "https://www.google.com/ncr";
 		my $url = "https://upload.wikimedia.org/wikipedia/commons/f/ff/Solid_blue.svg";
-		$browser = Renard::API::CEF::App::create_client(Renard::API::Gtk3::WindowID->get_widget_id($widget), $url);
+		$browser = Renard::API::CEF::App::create_client(
+			Renard::API::Gtk3::WindowID->get_widget_id($widget),
+			$url,
+			0, 0,
+			$widget->get_allocated_width, $widget->get_allocated_height );
 		$widget->queue_resize;
 	});
 

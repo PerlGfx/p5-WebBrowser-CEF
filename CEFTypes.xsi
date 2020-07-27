@@ -49,10 +49,13 @@ std::uint32_t refcnt_get(CefBaseRefCounted* param) {
 	}
 
 
-#ifdef _WIN32 /* Microsoft Windows */
+#if defined(OS_WIN)
 typedef long long int window_id_t;
 typedef HWND window_id_internal_t;
-#else
+#elif defined(OS_MACOSX)
+typedef long unsigned int window_id_t;
+typedef void* window_id_internal_t; // NSView*
+#elif defined(OS_LINUX)
 typedef long unsigned int window_id_t;
 typedef long unsigned int window_id_internal_t;
 #endif
