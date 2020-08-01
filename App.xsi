@@ -47,6 +47,9 @@ CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string,
 	// synchronous version of this function available.
 	//CefBrowserHost::CreateBrowser(window_info, client, url, browser_settings, NULL, NULL);
 	RETVAL = CefBrowserHost::CreateBrowserSync(window_info, client, url, browser_settings, NULL, NULL);
+	if( ! RETVAL ) {
+		throw std::runtime_error("Unable to create browser: CefBrowserHost::CreateBrowserSync()");
+	}
 }
 
 BOOT {
