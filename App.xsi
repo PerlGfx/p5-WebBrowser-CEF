@@ -14,6 +14,7 @@ private:
 
 void WindowSetParent( CefWindowInfo &window_info, window_id_t xid, int x, int y, int width, int height) {
 #if defined(OS_WIN)
+	window_info.parent_window = reinterpret_cast<window_id_internal_t>(xid);
 	RECT r;
 	GetClientRect(window_info.parent_window, &r);
 	window_info.SetAsChild( window_info.parent_window, r );
@@ -47,6 +48,9 @@ CefRefPtr<CefBrowser> create_client(window_id_t xid = 0, std::string url_string,
 	// synchronous version of this function available.
 	//CefBrowserHost::CreateBrowser(window_info, client, url, browser_settings, NULL, NULL);
 	RETVAL = CefBrowserHost::CreateBrowserSync(window_info, client, url, browser_settings, NULL, NULL);
+	if( ! RETVAL ) {
+		throw std::runtime_error("Unable to create browser: CefBrowserHost::CreateBrowserSync()");
+	}
 }
 
 BOOT {
