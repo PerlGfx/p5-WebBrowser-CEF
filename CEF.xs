@@ -12,11 +12,11 @@ using namespace xs;
 #include "CEFTypes.xsi"
 #include "String.xsi"
 
-MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF
+MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF
 PROTOTYPES: DISABLE
 
 BOOT {
-	Stash(__PACKAGE__, GV_ADD).mark_as_loaded("Renard::API::CEF");
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded("Intertangle::API::CEF");
 }
 
 INCLUDE: Rect.xsi

@@ -2,7 +2,7 @@ MODE: INLINE
 
 #include "include/cef_app.h"
 
-MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::_Global
+MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF::_Global
 PROTOTYPES: DISABLE
 
 void LoadLibrary(char* path) {

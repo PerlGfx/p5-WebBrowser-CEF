@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Renard::API::CEF::App;
+package Intertangle::API::CEF::App;
 # ABSTRACT: CEF App
 
 use Mu;

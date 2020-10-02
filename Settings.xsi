@@ -3,9 +3,9 @@ MODE: INLINE
 // #include "include/internal/cef_types_wrappers.h"
 // #include "include/internal/cef_types.h" // cef_settings_t
 
-CEF_XS_STRUCT_TYPEMAP(CefSettings, "Renard::API::CEF::Settings")
+CEF_XS_STRUCT_TYPEMAP(CefSettings, "Intertangle::API::CEF::Settings")
 
-MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::Settings
+MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF::Settings
 PROTOTYPES: DISABLE
 
 CefSettings* CefSettings::new()

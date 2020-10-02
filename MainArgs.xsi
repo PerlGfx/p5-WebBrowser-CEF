@@ -1,6 +1,6 @@
 MODE: INLINE
 
-CEF_XS_STRUCT_TYPEMAP(CefMainArgs, "Renard::API::CEF::MainArgs")
+CEF_XS_STRUCT_TYPEMAP(CefMainArgs, "Intertangle::API::CEF::MainArgs")
 
 void _set_cef_main_arg_t( SV* args_ref, cef_main_args_t& main_args ) {
 #ifndef _WIN32 /* Microsoft Windows */
@@ -28,7 +28,7 @@ void _clear_cef_main_arg_t( cef_main_args_t& main_args ) {
 #endif
 }
 
-MODULE = Renard::API::CEF                PACKAGE = Renard::API::CEF::MainArgs
+MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF::MainArgs
 PROTOTYPES: DISABLE
 
 # // CefMainArgs::new(int argc_arg, char** argv_arg)
