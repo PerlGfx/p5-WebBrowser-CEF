@@ -120,9 +120,10 @@ subtest "Create browser" => fun() {
 		);
 	}
 	## Provide CEF with command-line arguments.
-	#my $main_args = Intertangle::API::CEF::MainArgs->new(\@ARGV);
-	#my $main_args = Intertangle::API::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
-	my $main_args = Intertangle::API::CEF::MainArgs->new([]);
+	my $main_args;
+	#$main_args = Intertangle::API::CEF::MainArgs->new(\@ARGV);
+	#$main_args = Intertangle::API::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
+	$main_args = Intertangle::API::CEF::MainArgs->new([]);
 
 	#// CEF applications have multiple sub-processes (render, plugin, GPU, etc)
 	#// that share the same executable. This function checks the command-line and,
