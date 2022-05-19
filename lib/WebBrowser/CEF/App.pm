@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Intertangle::API::CEF::App;
+package WebBrowser::CEF::App;
 # ABSTRACT: CEF App
 
 use Mu;

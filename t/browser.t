@@ -11,7 +11,7 @@ use Intertangle::API::Gtk3::WindowID;
 use Gtk3 -init;
 
 use Imager::Screenshot;
-use Intertangle::API::CEF;
+use WebBrowser::CEF;
 
 use lib 't/lib';
 
@@ -113,16 +113,16 @@ subtest "Create browser" => fun() {
 	plan skip_all => "No monitor for display" unless Gtk3::Gdk::Display::get_default()->get_primary_monitor;
 
 	if( Alien::CEF->framework_path ) {
-		Intertangle::API::CEF::_Global::LoadLibrary(
+		WebBrowser::CEF::_Global::LoadLibrary(
 			path(Alien::CEF->framework_path)
 				->child('Chromium Embedded Framework')
 				->stringify
 		);
 	}
 	## Provide CEF with command-line arguments.
-	#my $main_args = Intertangle::API::CEF::MainArgs->new(\@ARGV);
-	#my $main_args = Intertangle::API::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
-	my $main_args = Intertangle::API::CEF::MainArgs->new([]);
+	#my $main_args = WebBrowser::CEF::MainArgs->new(\@ARGV);
+	#my $main_args = WebBrowser::CEF::MainArgs->new([ $^X, $0, "--no-sandbox", "--disable-gpu" ]);
+	my $main_args = WebBrowser::CEF::MainArgs->new([]);
 
 	#// CEF applications have multiple sub-processes (render, plugin, GPU, etc)
 	#// that share the same executable. This function checks the command-line and,
@@ -141,7 +141,7 @@ subtest "Create browser" => fun() {
 	##endif
 
 	#// Specify CEF global settings here.
-	my $settings = Intertangle::API::CEF::Settings->new_with_default_settings;
+	my $settings = WebBrowser::CEF::Settings->new_with_default_settings;
 
 	#// When generating projects with CMake the CEF_USE_SANDBOX value will be defined
 	#// automatically. Pass -DUSE_SANDBOX=OFF to the CMake command-line to disable
@@ -154,9 +154,9 @@ subtest "Create browser" => fun() {
 	#// SimpleApp implements application-level callbacks for the browser process.
 	#// It will create the first browser instance in OnContextInitialized() after
 	#// CEF has initialized.
-	my $app = Intertangle::API::CEF::App->new;
+	my $app = WebBrowser::CEF::App->new;
 
-	my $exit_code = Intertangle::API::CEF::_Global::CefExecuteProcess($main_args, $app);
+	my $exit_code = WebBrowser::CEF::_Global::CefExecuteProcess($main_args, $app);
 	if( $exit_code >= 0 ) {
 		diag "Exiting CEF process with code: $exit_code";
 		return $exit_code;
@@ -164,7 +164,7 @@ subtest "Create browser" => fun() {
 
 	#// Initialize CEF for the browser process.
 	#CefInitialize(main_args, settings, app.get(), NULL);
-	Intertangle::API::CEF::_Global::CefInitialize($main_args, $settings, $app);
+	WebBrowser::CEF::_Global::CefInitialize($main_args, $settings, $app);
 
 	my $browser;
 
@@ -178,7 +178,7 @@ subtest "Create browser" => fun() {
 	$widget->signal_connect( realize => sub {
 		#my $url = "https://www.google.com/ncr";
 		my $url = "https://upload.wikimedia.org/wikipedia/commons/f/ff/Solid_blue.svg";
-		$browser = Intertangle::API::CEF::App::create_client(
+		$browser = WebBrowser::CEF::App::create_client(
 			Intertangle::API::Gtk3::WindowID->get_widget_id($widget),
 			$url,
 			0, 0,
@@ -201,16 +201,16 @@ subtest "Create browser" => fun() {
 
 	#// Run the CEF message loop. This will block until CefQuitMessageLoop() is
 	#// called.
-	#Intertangle::API::CEF::_Global::CefRunMessageLoop();
+	#WebBrowser::CEF::_Global::CefRunMessageLoop();
 	Glib::Timeout->add(10, sub {
 		return unless $browser;
-		Intertangle::API::CEF::_Global::CefDoMessageLoopWork();
+		WebBrowser::CEF::_Global::CefDoMessageLoopWork();
 		return TRUE;
 	});
 
 	$w->signal_connect( 'delete-event' => sub {
 		#// Shut down CEF.
-		Intertangle::API::CEF::_Global::CefShutdown();
+		WebBrowser::CEF::_Global::CefShutdown();
 	});
 
 	my $img;

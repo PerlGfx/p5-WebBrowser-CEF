@@ -1,8 +1,8 @@
 MODE: INLINE
 
-CEF_XS_STRUCT_TYPEMAP(CefRect, "Intertangle::API::CEF::Rect")
+CEF_XS_STRUCT_TYPEMAP(CefRect, "WebBrowser::CEF::Rect")
 
-MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF::Rect
+MODULE = WebBrowser::CEF                PACKAGE = WebBrowser::CEF::Rect
 PROTOTYPES: DISABLE
 
 CefRect* CefRect::new( int x, int y, int width, int height );

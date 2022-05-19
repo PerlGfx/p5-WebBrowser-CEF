@@ -2,9 +2,9 @@ MODE: INLINE
 
 #include "include/cef_browser.h"
 
-CEF_XS_TYPEMAP(CefBrowser, "Intertangle::API::CEF::Browser")
+CEF_XS_TYPEMAP(CefBrowser, "WebBrowser::CEF::Browser")
 
-MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF::Browser
+MODULE = WebBrowser::CEF                PACKAGE = WebBrowser::CEF::Browser
 PROTOTYPES: DISABLE
 
 # /* TODO implement this in CefBrowserHost */

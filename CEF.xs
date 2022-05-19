@@ -12,11 +12,11 @@ using namespace xs;
 #include "CEFTypes.xsi"
 #include "String.xsi"
 
-MODULE = Intertangle::API::CEF                PACKAGE = Intertangle::API::CEF
+MODULE = WebBrowser::CEF                PACKAGE = WebBrowser::CEF
 PROTOTYPES: DISABLE
 
 BOOT {
-	Stash(__PACKAGE__, GV_ADD).mark_as_loaded("Intertangle::API::CEF");
+	Stash(__PACKAGE__, GV_ADD).mark_as_loaded("WebBrowser::CEF");
 }
 
 INCLUDE: Rect.xsi

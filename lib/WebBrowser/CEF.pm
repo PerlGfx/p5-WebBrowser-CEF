@@ -1,5 +1,5 @@
 use Renard::Incunabula::Common::Setup;
-package Intertangle::API::CEF;
+package WebBrowser::CEF;
 # ABSTRACT: API for Chromium Embedded Framework
 
 use XS::Framework;
@@ -19,7 +19,7 @@ BEGIN {
 	}
 }
 
-use Intertangle::API::CEF::Settings;
+use WebBrowser::CEF::Settings;
 
 1;
 =head1 SEE ALSO
