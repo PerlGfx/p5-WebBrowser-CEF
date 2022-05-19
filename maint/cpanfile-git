@@ -2,7 +2,7 @@ requires 'Renard::Incunabula',
 	git => 'https://github.com/project-renard/p5-Renard-Incunabula.git',
 	branch => 'master';
 requires 'Alien::CEF',
-	git => 'https://github.com/project-renard/p5-Alien-CEF.git',
+	git => 'https://github.com/PerlGfx/p5-Alien-CEF.git',
 	branch => 'master';
 requires 'Intertangle::API::Glib',
 	git => 'https://github.com/Intertangle/p5-Intertangle-API-Glib.git',
